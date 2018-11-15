@@ -16,7 +16,7 @@ class Cli:
         template_parser.add_argument('-a',
                                      dest='algorithm',
                                      action='store',
-                                     metavar='{dt,nb,ph}',
+                                     metavar='{dt,nb,knc}',
                                      help='Specify the training method.',
                                      required=True)
         template_parser.add_argument('DATASET',
@@ -30,12 +30,6 @@ class Cli:
         predict_parser = method_parsers.add_parser('predict',
                                                    parents=[template_parser],
                                                    help='Predict with model.')
-        predict_parser.add_argument('-o',
-                                    dest='',
-                                    action='store_const',
-                                    const=True,
-                                    default=False,
-                                    help='Parameter for saving the prediction output as CSV file (default as False).')
         return command_parser
 
 

@@ -1,8 +1,9 @@
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import LinearSVC
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from sklearn.model_selection import learning_curve
+from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -26,8 +27,8 @@ class Classification:
             print('Training Naive Bayes (Gaussian) Classifier model with new data ......')
             classifier = GaussianNB()
         else:
-            print('Training Linear SVC model with new data ......')
-            classifier = LinearSVC()
+            print('Training KNeighborsClassifier model with new data ......')
+            classifier = KNeighborsClassifier()
         # fit training set to classifier model
         classifier.fit(train_x, train_y)
         print('Training finished.')
@@ -40,14 +41,14 @@ class Classification:
         pred_df.index = pred_df.index + 1
         pred_df.to_csv('output/' + self.dataset_name + 'Val' + alg_name + '.csv', header=False)
         # show score metrics
-        self.__show_score__(val_y, pred_y)
+        self.__show_score__(val_y, pred_y, algorithm)
         # retrain the model with validation set
         classifier.fit(val_x, val_y)
         # save the model
         with open('model/' + algorithm + '.pkl', 'wb') as model:
             pickle.dump(classifier, model)
         # show graphical result of training set
-        self.__show_learning_curve__(classifier, train_x, train_y)
+        self.__show_learning_curve__(algorithm, classifier, train_x, train_y)
 
     def predict(self, algorithm):
         # load test set
@@ -70,16 +71,27 @@ class Classification:
         pred_df.index = pred_df.index + 1
         pred_df.to_csv('output/' + self.dataset_name + 'Test' + alg_name + '.csv', header=False)
         # show score metrics
-        self.__show_score__(test_y, pred_y)
+        self.__show_score__(test_y, pred_y, algorithm)
 
-    def __show_score__(self, val_y, pred_y):
+    def __show_score__(self, val_y, pred_y, algorithm):
         # print metrics
-        print('Accuracy', metrics.accuracy_score(val_y, pred_y))
-        print('precision_score (micro)', metrics.precision_score(val_y, pred_y, average='micro'))
-        print('recall_score (micro)', metrics.recall_score(val_y, pred_y, average='micro'))
-        print('f1_score (micro)', metrics.f1_score(val_y, pred_y, average='micro'))
+        model_metrics = dict()
+        model_metrics['accuracy'] = metrics.accuracy_score(val_y, pred_y)
+        model_metrics['precision'] = metrics.precision_score(val_y, pred_y, average='micro')
+        model_metrics['recall'] = metrics.recall_score(val_y, pred_y, average='micro')
+        model_metrics['f1'] = metrics.f1_score(val_y, pred_y, average='micro')
+        with open('output/matrics.txt', 'a') as metrics_log:
+            metrics_log.write(str(datetime.now()) + '\n')
+            metrics_log.write('model: ' + algorithm + '\n')
+            metrics_log.write('data set: ' + self.dataset_name + '\n')
+            for metric, value in model_metrics.items():
+                print(metric + ': ' + str(value))
+                metrics_log.write(metric + ': ' + str(value) + '\n')
+            metrics_log.write('\n\n')
+        return
 
-    def __show_learning_curve__(self, model, train_x, train_y, scoring='f1_micro', cv=10):
+    def __show_learning_curve__(self, algorithm, model, train_x, train_y, scoring='f1_micro', cv=10):
+        print('Generating the learning curve figure......')
         # Create CV training and test scores for various training set sizes
         train_sizes, train_scores, test_scores = learning_curve(model,
                                                                 train_x,
@@ -108,7 +120,8 @@ class Classification:
         plt.title("Learning Curve")
         plt.xlabel("Training Set Size"), plt.ylabel("F1 Score"), plt.legend(loc="best")
         plt.tight_layout()
-        plt.show()
+        plt.savefig('output/' + self.dataset_name + '-' + algorithm + '.png')
+        print('Learning curve figure is saved as output/' + self.dataset_name + '-' + algorithm + '.png')
 
     def __load_training_set__(self):
         try:
