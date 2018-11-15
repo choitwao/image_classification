@@ -36,7 +36,7 @@ class Classification:
         print('Cross-validating the model ......')
         pred_y = classifier.predict(val_x)
         # save the prediction in CSV file
-        alg_name = '-' + algorithm if algorithm == 'dt' or algorithm == 'nb' else ''
+        alg_name = '-' + algorithm if algorithm == 'dt' or algorithm == 'nb' else '-3'
         pred_df = pd.DataFrame(pred_y)
         pred_df.index = pred_df.index + 1
         pred_df.to_csv('output/' + self.dataset_name + 'Val' + alg_name + '.csv', header=False)
@@ -111,14 +111,14 @@ class Classification:
         test_mean = np.mean(test_scores, axis=1)
         test_std = np.std(test_scores, axis=1)
         # Draw lines
-        plt.plot(train_sizes, train_mean, color="#330000", label="Training score")
-        plt.plot(train_sizes, test_mean, color="#4d94ff", label="Cross-validation score")
+        plt.plot(train_sizes, train_mean, color='#330000', label='Training score')
+        plt.plot(train_sizes, test_mean, color='#4d94ff', label='Cross-validation score')
         # Draw bands
-        plt.fill_between(train_sizes, train_mean - train_std, train_mean + train_std, color="#DDDDDD")
-        plt.fill_between(train_sizes, test_mean - test_std, test_mean + test_std, color="#DDDDDD")
+        plt.fill_between(train_sizes, train_mean - train_std, train_mean + train_std, color='#DDDDDD')
+        plt.fill_between(train_sizes, test_mean - test_std, test_mean + test_std, color='#DDDDDD')
         # Create plot
-        plt.title("Learning Curve")
-        plt.xlabel("Training Set Size"), plt.ylabel("F1 Score"), plt.legend(loc="best")
+        plt.title('Learning Curve')
+        plt.xlabel('Training Set Size'), plt.ylabel('Score'), plt.legend(loc='best')
         plt.tight_layout()
         plt.savefig('output/' + self.dataset_name + '-' + algorithm + '.png')
         print('Learning curve figure is saved as output/' + self.dataset_name + '-' + algorithm + '.png')
