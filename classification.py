@@ -1,5 +1,6 @@
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import LinearSVC
 from sklearn import metrics
 from sklearn.model_selection import learning_curve
 import numpy as np
@@ -18,26 +19,26 @@ class Classification:
         # get processed train/validation sets
         train_x, train_y, val_x, val_y = self.__load_training_set__()
         # load previous model if any, or create a new model
-        classifier = None
-        try:
-            with open('model/' + algorithm + '.pkl', 'rb') as model:
-                classifier = pickle.load(model)
-                print('Saved ' + algorithm + ' classification model is loaded.')
-        except FileNotFoundError:
-            if algorithm == 'dt':
-                print('Training Decision Tree Classifier model with new data ......')
-                classifier = DecisionTreeClassifier(criterion='entropy', random_state=0)
-            elif algorithm == 'nb':
-                print('Training Naive Bayes (Gaussian) Classifier model with new data ......')
-                classifier = GaussianNB()
-            else:
-                pass
+        if algorithm == 'dt':
+            print('Training Decision Tree Classifier model with new data ......')
+            classifier = DecisionTreeClassifier(criterion='entropy', random_state=0)
+        elif algorithm == 'nb':
+            print('Training Naive Bayes (Gaussian) Classifier model with new data ......')
+            classifier = GaussianNB()
+        else:
+            print('Training Linear SVC model with new data ......')
+            classifier = LinearSVC()
         # fit training set to classifier model
         classifier.fit(train_x, train_y)
         print('Training finished.')
         # cross-validation
         print('Cross-validating the model ......')
         pred_y = classifier.predict(val_x)
+        # save the prediction in CSV file
+        alg_name = '-' + algorithm if algorithm == 'dt' or algorithm == 'nb' else ''
+        pred_df = pd.DataFrame(pred_y)
+        pred_df.index = pred_df.index + 1
+        pred_df.to_csv('output/' + self.dataset_name + 'Val' + alg_name + '.csv', header=False)
         # show score metrics
         self.__show_score__(val_y, pred_y)
         # retrain the model with validation set
@@ -63,6 +64,11 @@ class Classification:
         # predict the test set
         print('Predicting the test set ......')
         pred_y = classifier.predict(test_x)
+        # save the prediction in CSV file
+        alg_name = '-' + algorithm if algorithm == 'dt' or algorithm == 'nb' else ''
+        pred_df = pd.DataFrame(pred_y)
+        pred_df.index = pred_df.index + 1
+        pred_df.to_csv('output/' + self.dataset_name + 'Test' + alg_name + '.csv', header=False)
         # show score metrics
         self.__show_score__(test_y, pred_y)
 
