@@ -40,6 +40,7 @@ class Classification:
         pred_df = pd.DataFrame(pred_y)
         pred_df.index = pred_df.index + 1
         pred_df.to_csv('output/' + self.dataset_name + 'Val' + alg_name + '.csv', header=False)
+        print('The prediction of validation set has been saved as ' + 'output/' + self.dataset_name + 'Val' + alg_name + '.csv')
         # show score metrics
         self.__show_score__(val_y, pred_y, algorithm)
         # retrain the model with validation set
@@ -47,12 +48,12 @@ class Classification:
         # save the model
         with open('model/' + algorithm + '.pkl', 'wb') as model:
             pickle.dump(classifier, model)
-        # show graphical result of training set
+        # save graphical result of training set
         self.__show_learning_curve__(algorithm, classifier, train_x, train_y)
 
     def predict(self, algorithm):
         # load test set
-        test_x, test_y = self.__load_test_set()
+        test_x = self.__load_test_set()
         # load previous model if any, or throw error
         classifier = None
         try:
@@ -70,8 +71,7 @@ class Classification:
         pred_df = pd.DataFrame(pred_y)
         pred_df.index = pred_df.index + 1
         pred_df.to_csv('output/' + self.dataset_name + 'Test' + alg_name + '.csv', header=False)
-        # show score metrics
-        self.__show_score__(test_y, pred_y, algorithm)
+        print('The prediction of test set has been saved as ' + 'output/' + self.dataset_name + 'Test' + alg_name + '.csv')
 
     def __show_score__(self, val_y, pred_y, algorithm):
         # print metrics
@@ -143,13 +143,11 @@ class Classification:
     def __load_test_set(self):
         try:
             # load test set, split them into features and output
-            test_set = pd.read_csv('data/' + self.dataset_name + '/' + self.dataset_name + 'Test.csv', header=None)
-            test_x = test_set.iloc[:, :-1]
-            test_y = test_set.iloc[:, -1]
+            test_x = pd.read_csv('data/' + self.dataset_name + '/' + self.dataset_name + 'Test.csv', header=None)
             print('The test set of ' + self.dataset_name + ' is loaded.')
-            print('Instance: ', len(test_set.axes[0]))
-            print('Feature: ', len(test_set.axes[1]) - 1)
-            return test_x, test_y
+            print('Instance: ', len(test_x.axes[0]))
+            print('Feature: ', len(test_x.axes[1]) - 1)
+            return test_x
         except FileNotFoundError:
             print('The data set cannot be found in the data directory, please double check.')
             os._exit(1)
