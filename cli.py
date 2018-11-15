@@ -16,8 +16,9 @@ class Cli:
         template_parser.add_argument('-a',
                                      dest='algorithm',
                                      action='store',
-                                     metavar='{DT,MB}',
-                                     help='Specify the training method.')
+                                     metavar='{DT,NB}',
+                                     help='Specify the training method.',
+                                     required=True)
         template_parser.add_argument('DATASET',
                                      action='store',
                                      help='The name of the data set (i.e. ds1 for \'data/ds1\'')
