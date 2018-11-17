@@ -1,7 +1,8 @@
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
+from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import learning_curve
 from datetime import datetime
 import numpy as np
@@ -22,13 +23,17 @@ class Classification:
         # load previous model if any, or create a new model
         if algorithm == 'dt':
             print('Training Decision Tree Classifier model with new data ......')
-            classifier = DecisionTreeClassifier(criterion='entropy', random_state=0)
+            classifier = DecisionTreeClassifier(random_state=0,
+                                                # set to 18 for ds2
+                                                min_samples_split=18)
         elif algorithm == 'nb':
             print('Training Naive Bayes (Gaussian) Classifier model with new data ......')
-            classifier = GaussianNB()
+            classifier = GaussianNB(var_smoothing=0.1)
         else:
             print('Training KNeighborsClassifier model with new data ......')
-            classifier = KNeighborsClassifier()
+            classifier = RandomForestClassifier(random_state=0,
+                                                # set to 8 for ds1, default(2) for ds2
+                                                min_samples_split=8)
         # fit training set to classifier model
         classifier.fit(train_x, train_y)
         print('Training finished.')
@@ -43,12 +48,10 @@ class Classification:
         print('The prediction of validation set has been saved as ' + 'output/' + self.dataset_name + 'Val' + alg_name + '.csv')
         # show score metrics
         self.__show_score__(val_y, pred_y, algorithm)
-        # retrain the model with validation set
-        classifier.fit(val_x, val_y)
         # save the model
         with open('model/' + algorithm + '.pkl', 'wb') as model:
             pickle.dump(classifier, model)
-        # save graphical result of training set
+        # save graphical result of training set, disable it for better speed
         self.__show_learning_curve__(algorithm, classifier, train_x, train_y)
 
     def predict(self, algorithm):
@@ -76,10 +79,10 @@ class Classification:
     def __show_score__(self, val_y, pred_y, algorithm):
         # print metrics
         model_metrics = dict()
-        model_metrics['accuracy'] = metrics.accuracy_score(val_y, pred_y)
-        model_metrics['precision'] = metrics.precision_score(val_y, pred_y, average='micro')
-        model_metrics['recall'] = metrics.recall_score(val_y, pred_y, average='micro')
-        model_metrics['f1'] = metrics.f1_score(val_y, pred_y, average='micro')
+        model_metrics['accuracy'] = round(metrics.accuracy_score(val_y, pred_y), 5)
+        model_metrics['precision'] = round(metrics.precision_score(val_y, pred_y, average='weighted'), 5)
+        model_metrics['recall'] = round(metrics.recall_score(val_y, pred_y, average='weighted'), 5)
+        model_metrics['f1_score'] = round(metrics.f1_score(val_y, pred_y, average='weighted'), 5)
         with open('output/matrics.txt', 'a') as metrics_log:
             metrics_log.write(str(datetime.now()) + '\n')
             metrics_log.write('model: ' + algorithm + '\n')
@@ -96,8 +99,8 @@ class Classification:
         train_sizes, train_scores, test_scores = learning_curve(model,
                                                                 train_x,
                                                                 train_y,
-                                                                # K-fold cross-validation where k set to 10 by default
-                                                                cv=cv,
+                                                                # 10-fold with 20% test set
+                                                                cv=ShuffleSplit(n_splits=10, test_size=0.2, random_state=0),
                                                                 # use f1 score (micro-average) metric
                                                                 scoring=scoring,
                                                                 # use all system threads
@@ -120,8 +123,8 @@ class Classification:
         plt.title('Learning Curve')
         plt.xlabel('Training Set Size'), plt.ylabel('Score'), plt.legend(loc='best')
         plt.tight_layout()
-        plt.savefig('output/' + self.dataset_name + '-' + algorithm + '.png')
-        print('Learning curve figure is saved as output/' + self.dataset_name + '-' + algorithm + '.png')
+        plt.savefig('output/figure/' + self.dataset_name + '-' + algorithm + '.png')
+        print('Learning curve figure is saved as output/figure/' + self.dataset_name + '-' + algorithm + '.png')
 
     def __load_training_set__(self):
         try:
