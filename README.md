@@ -37,7 +37,7 @@ ds1:
 
 `python -m main predict ds1 -a nb`
 
-ds1:
+ds2:
 
 `python -m main train ds2 -a dt`
 
