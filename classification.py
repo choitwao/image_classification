@@ -70,7 +70,7 @@ class Classification:
         print('Predicting the test set ......')
         pred_y = classifier.predict(test_x)
         # save the prediction in CSV file
-        alg_name = '-' + algorithm if algorithm == 'dt' or algorithm == 'nb' else ''
+        alg_name = '-' + algorithm if algorithm == 'dt' or algorithm == 'nb' else '-3'
         pred_df = pd.DataFrame(pred_y)
         pred_df.index = pred_df.index + 1
         pred_df.to_csv('output/' + self.dataset_name + 'Test' + alg_name + '.csv', header=False)
